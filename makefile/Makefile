@@ -1,32 +1,28 @@
 # variaveis de configuracao
 CC := g++
-CFLAGS :=-c -W -Wall -Wextra -ansi -std=c++11
-EXEC := vpl_execution #executavel
+CFLAGS :=-Wall -std=c++11
+TARGET := vpl_execution #executavel
 
-MAIN_DIR = ./src/main.cpp 
-ENTIDADES_DIR = ./src/entidades/*.cpp
-HPP_SRC = $(wildcard ./include/*.hpp)
-BUILD_FILES = $(subst .cpp,.o,$(subst src,build,./src/entidades))
+# diretorios
+BUILD_DIR = ./build
+SRC_DIR = ./src
+INCLUDE_DIR = ./include
 
-RM = rm -f
 
-all: buildFolder $(EXEC)
+${BUILD_DIR}/${TARGET}: ${BUILD_DIR}/Personagem.o ${BUILD_DIR}/Vilao.o ${BUILD_DIR}/Heroi.o ${BUILD_DIR}/main.o 
+	${CC} ${CFLAGS} ${BUILD_DIR}/*.o -o ${TARGET}
 
-$(EXEC): $(BUILD_FILES)
-	@ echo "building object files"
-	$(CC) $^ -o $@
-	@echo "build finished"
+${BUILD_DIR}/main.o: ${SRC_DIR}/main.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR} -c ${SRC_DIR}/main.cpp -o ${BUILD_DIR}/main.o
 
-./build/entidades/%.o: ./build/%.o
+${BUILD_DIR}/Heroi.o: ${BUILD_DIR}/Personagem.o ${BUILD_DIR}/Vilao.o ${INCLUDE_DIR}/Heroi.hpp ${SRC_DIR}/entidades/Heroi.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR} -c ${SRC_DIR}/entidades/Heroi.cpp -o ${BUILD_DIR}/Heroi.o
 
-./build/%.o: ./src/%.cpp ./src/entidades/%.cpp ./include/%.hpp
-	$(CC) $< $(FLAGS) -o $@
+${BUILD_DIR}/Vilao.o: ${BUILD_DIR}/Personagem.o ${INCLUDE_DIR}/Vilao.hpp ${SRC_DIR}/entidades/Vilao.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR} -c ${SRC_DIR}/entidades/Vilao.cpp -o ${BUILD_DIR}/Vilao.o
 
-./build/main.o: main.cpp $(H_SRC)
-	$(CC) -o $@ $< $(FLAGS)
-
-buildFolder:
-	@ mkdir -p build
+${BUILD_DIR}/Personagem.o: ${INCLUDE_DIR}/Personagem.hpp ${SRC_DIR}/entidades/Personagem.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR} -c ${SRC_DIR}/entidades/Personagem.cpp -o ${BUILD_DIR}/Personagem.o
 
 clean:
-	$(RM) ./build/*.o $(EXEC) *~
+	rm -f $(BUILD_DIR)/*
